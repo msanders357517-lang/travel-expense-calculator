@@ -1,49 +1,138 @@
-Travel Expense Calculator
-Live App: https://travel-expense-calculator.streamlit.app/
-A Streamlit app for manually entering round-trip travel mileage and projecting travel reimbursements.
-Main features
+🚗 Travel Expense Calculator
+Live App:  
+https://travel-expense-calculator.streamlit.app/
+A Streamlit application for calculating and projecting travel-related reimbursements, including mileage, per diem, pay-period totals, annual expense estimates, and future mileage-rate scenarios.
+---
+✨ Main Features
 Editable mileage reimbursement rate
-Editable per diem categories
-Manual round-trip mileage
-Route/location notes
-Duplicate trips
+Editable per diem categories and rates
+Manual round-trip mileage entry
+Route and location notes
+Duplicate-trip option
 Weekly, biweekly, semi-monthly, and monthly pay frequencies
-Weekdays-only or include-weekends setting
+Weekdays-only or include-weekends settings
 Eligible travel-day safeguard
-Pay-period expense-check estimate
-Weekly reimbursement projection
-Annual miles and reimbursement projection
+Pay-period expense-check estimates
+Weekly reimbursement projections
+Annual mileage and reimbursement projections
 Future mileage-rate scenarios
 Excel export
-Run locally
-```bash
-pip install -r requirements.txt
-streamlit run app.py
-```
-GitHub
-Upload the project files to a GitHub repository. Keep `app.py` and `requirements.txt` at the repository root.
-Streamlit App
+---
+🌐 Live App
 The deployed Travel Expense Calculator is available here:
 https://travel-expense-calculator.streamlit.app/
-Streamlit Community Cloud
-To manage or redeploy the app:
+---
+▶️ Run Locally
+Install the required packages:
+```bash
+pip install -r requirements.txt
+```
+Then start the app:
+```bash
+streamlit run app.py
+```
+---
+📁 GitHub Setup
+Upload the project files to a GitHub repository.
+Keep the main project files at the repository root:
+```text
+app.py
+requirements.txt
+README.md
+config.toml
+```
+---
+☁️ Streamlit Community Cloud
+Manage or redeploy the app through Streamlit Community Cloud:
 https://share.streamlit.io/
-Sign in with GitHub.
-Select the GitHub repository for this project.
-Set the main file path to `app.py`.
+Deployment Steps
+Sign in with your GitHub account.
+Select the GitHub repository containing the app.
+Set the main file path to:
+```text
+app.py
+```
 Deploy or reboot the app as needed.
 No API keys or secrets are required.
-Calculation logic
-For each trip:
-`total miles = round-trip miles × occurrences`
-`mileage reimbursement = total miles × mileage reimbursement rate`
-`per diem = per diem rate × occurrences`
-`expense total = mileage reimbursement + per diem`
-Annual projections use the trip's separate `Times per week for projection` value × 52 weeks.
-Future mileage-rate projections keep the mileage pattern constant and change only the assumed reimbursement rate.
-Eligible travel-day safeguard
-For the selected pay period, the app calculates the number of eligible travel days based on the pay-period dates and whether weekends are included.
-The combined total of all `Times this pay period` entries cannot exceed the eligible-day count. If it does:
-the app displays an error
-the pay-period calculation is blocked
-Excel export is disabled until the entries are corrected
+---
+🧮 Calculation Logic
+For each trip, the app uses the following calculations.
+Total Miles
+```text
+Total Miles = Round-Trip Miles × Number of Occurrences
+```
+Mileage Reimbursement
+```text
+Mileage Reimbursement = Total Miles × Mileage Reimbursement Rate
+```
+Per Diem
+```text
+Per Diem Total = Per Diem Rate × Number of Occurrences
+```
+Total Expense Reimbursement
+```text
+Expense Total = Mileage Reimbursement + Per Diem
+```
+---
+📅 Weekly and Annual Projections
+Each trip includes a separate Times per Week for Projection setting.
+The app uses this value to calculate:
+Projected weekly miles
+Projected weekly mileage reimbursement
+Projected weekly per diem
+Projected weekly total
+Projected annual miles
+Projected annual mileage reimbursement
+Projected annual per diem
+Projected annual total
+Annual projections are based on:
+```text
+Weekly Projection × 52 Weeks
+```
+---
+📈 Future Mileage-Rate Scenarios
+The app can also model future reimbursement rates.
+For example, if the current mileage rate is:
+```text
+$0.76 per mile
+```
+and the user assumes the rate increases by:
+```text
+$0.02 per mile each year
+```
+the app projects future mileage reimbursement amounts while keeping the same travel pattern.
+These are user-defined scenarios and are not official IRS forecasts.
+---
+🛡️ Eligible Travel-Day Safeguard
+The app calculates the number of eligible travel days in the selected pay period based on:
+Pay frequency
+Pay-period dates
+Whether weekends are included
+The combined total of all Times this Pay Period entries cannot exceed the number of eligible travel days.
+Example
+If a pay period contains:
+```text
+11 eligible travel days
+```
+the total number of trip occurrences entered for that pay period cannot exceed:
+```text
+11
+```
+If the limit is exceeded:
+The app displays an error
+The pay-period reimbursement calculation is blocked
+Excel export is disabled
+The user must correct the trip entries before continuing
+---
+📊 Excel Export
+The app can generate an Excel workbook containing:
+Summary
+Trip setup
+Pay-period trip details
+Weekly projection
+Future mileage-rate projection
+Per diem settings
+---
+ℹ️ Notes
+Mileage is entered manually as full round-trip mileage.
+No map service or API key is required.
