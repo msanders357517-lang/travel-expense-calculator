@@ -1,40 +1,38 @@
 Travel Expense Calculator
-A Streamlit app for manually entering round-trip travel mileage and projecting travel reimbursements.
-Main features
+Open the live app
+A Streamlit app for calculating mileage reimbursement, per diem, pay-period expense checks, and travel projections.
+Features
 Editable mileage reimbursement rate
-Editable per diem categories
-Manual round-trip mileage
-Route/location notes
+Editable per diem categories and rates
+Manual round-trip mileage entry
 Duplicate trips
+Route and location notes
 Weekly, biweekly, semi-monthly, and monthly pay frequencies
-Weekdays-only or include-weekends setting
-Pay-period expense-check estimate
-Weekly reimbursement projection
-Annual miles and reimbursement projection
+Weekdays-only or weekend-inclusive travel
+Eligible travel-day safeguard
+Weekly and annual projections
 Future mileage-rate scenarios
 Excel export
-Run locally
+Calculation
+Total miles  
+Round-trip miles × number of trips
+Mileage reimbursement  
+Total miles × mileage rate
+Per diem  
+Per diem rate × number of trips
+Expense check  
+Mileage reimbursement + per diem
+Travel-Day Safeguard
+The total number of trips entered for a pay period cannot exceed the number of eligible travel days.
+If the limit is exceeded, the app will:
+Show an error
+Stop the pay-period calculation
+Disable Excel export until corrected
+Run Locally
 ```bash
 pip install -r requirements.txt
 streamlit run app.py
 ```
-GitHub
-Upload the project files to a GitHub repository. Keep `app.py` and `requirements.txt` at the repository root.
-Streamlit Community Cloud
-Sign in to Streamlit Community Cloud.
-Create a new app.
-Select this GitHub repository.
-Set the main file path to `app.py`.
-Deploy.
-No API keys or secrets are required.
-Calculation logic
-For each trip:
-`total miles = round-trip miles × occurrences`
-`mileage reimbursement = total miles × mileage reimbursement rate`
-`per diem = per diem rate × occurrences`
-`expense total = mileage reimbursement + per diem`
-Annual projections use the trip's separate `Times per week for projection` value × 52 weeks.
-Future mileage-rate projections keep the mileage pattern constant and change only the assumed reimbursement rate.
-
-Eligible travel-day safeguard
-The combined total of all `Times this pay period` entries cannot exceed the number of eligible travel days in the selected period. If the total is too high, the app displays an error and disables the pay-period export until the entries are corrected.
+Deploy
+Use Streamlit Community Cloud and select `app.py` as the main file.
+No API keys are required.
