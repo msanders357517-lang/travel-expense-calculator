@@ -193,6 +193,65 @@ def annual_projection_from_weekly(mileage_rate):
     }
 
 
+def projection_for_date_range(start_date, end_date, mileage_rate):
+    """Estimate a date-range projection from the user's normal weekly pattern."""
+    weekly_rows = build_weekly_rows(mileage_rate)
+
+    weekly = summarize(
+        weekly_rows,
+        "Weekly miles",
+        "Mileage reimbursement",
+        "Per diem",
+        "Weekly total",
+    )
+
+    total_days = (end_date - start_date).days + 1
+    week_equivalents = total_days / 7.0
+
+    return {
+        "start": start_date,
+        "end": end_date,
+        "days": total_days,
+        "week_equivalents": week_equivalents,
+        "miles": weekly["miles"] * week_equivalents,
+        "mileage": weekly["mileage"] * week_equivalents,
+        "per_diem": weekly["per_diem"] * week_equivalents,
+        "total": weekly["total"] * week_equivalents,
+    }
+
+
+def calendar_and_fiscal_projections(mileage_rate, reference_date=None):
+    reference_date = reference_date or date.today()
+
+    calendar_start = date(reference_date.year, 1, 1)
+    calendar_end = date(reference_date.year, 12, 31)
+
+    # Alabama-style fiscal year: Oct. 1 through Sept. 30.
+    # The fiscal year is named for the year in which it ends.
+    if reference_date.month >= 10:
+        fiscal_start = date(reference_date.year, 10, 1)
+        fiscal_end = date(reference_date.year + 1, 9, 30)
+        fiscal_label = f"FY {reference_date.year + 1}"
+    else:
+        fiscal_start = date(reference_date.year - 1, 10, 1)
+        fiscal_end = date(reference_date.year, 9, 30)
+        fiscal_label = f"FY {reference_date.year}"
+
+    return {
+        "calendar": projection_for_date_range(
+            calendar_start,
+            calendar_end,
+            mileage_rate,
+        ),
+        "fiscal": projection_for_date_range(
+            fiscal_start,
+            fiscal_end,
+            mileage_rate,
+        ),
+        "fiscal_label": fiscal_label,
+    }
+
+
 def build_future_rate_projection(base_rate, annual_increase, years):
     rows = []
 
@@ -278,13 +337,61 @@ def make_excel_export(
                 ["Expense check total", pay_summary["total"]],
                 ["Projected weekly miles", annual["weekly"]["miles"]],
                 ["Projected weekly total", annual["weekly"]["total"]],
-                ["Projected annual miles", annual["annual_miles"]],
+                ["52-week projected miles", annual["annual_miles"]],
                 [
-                    "Projected annual mileage reimbursement",
+                    "52-week projected mileage reimbursement",
                     annual["annual_mileage"],
                 ],
-                ["Projected annual per diem", annual["annual_per_diem"]],
-                ["Projected annual total", annual["annual_total"]],
+                ["52-week projected per diem", annual["annual_per_diem"]],
+                ["52-week projected total", annual["annual_total"]],
+                [
+                    f"Calendar Year {date.today().year} miles",
+                    calendar_and_fiscal_projections(
+                        st.session_state.mileage_rate
+                    )["calendar"]["miles"],
+                ],
+                [
+                    f"Calendar Year {date.today().year} mileage reimbursement",
+                    calendar_and_fiscal_projections(
+                        st.session_state.mileage_rate
+                    )["calendar"]["mileage"],
+                ],
+                [
+                    f"Calendar Year {date.today().year} per diem",
+                    calendar_and_fiscal_projections(
+                        st.session_state.mileage_rate
+                    )["calendar"]["per_diem"],
+                ],
+                [
+                    f"Calendar Year {date.today().year} total",
+                    calendar_and_fiscal_projections(
+                        st.session_state.mileage_rate
+                    )["calendar"]["total"],
+                ],
+                [
+                    f"{calendar_and_fiscal_projections(st.session_state.mileage_rate)['fiscal_label']} miles",
+                    calendar_and_fiscal_projections(
+                        st.session_state.mileage_rate
+                    )["fiscal"]["miles"],
+                ],
+                [
+                    f"{calendar_and_fiscal_projections(st.session_state.mileage_rate)['fiscal_label']} mileage reimbursement",
+                    calendar_and_fiscal_projections(
+                        st.session_state.mileage_rate
+                    )["fiscal"]["mileage"],
+                ],
+                [
+                    f"{calendar_and_fiscal_projections(st.session_state.mileage_rate)['fiscal_label']} per diem",
+                    calendar_and_fiscal_projections(
+                        st.session_state.mileage_rate
+                    )["fiscal"]["per_diem"],
+                ],
+                [
+                    f"{calendar_and_fiscal_projections(st.session_state.mileage_rate)['fiscal_label']} total",
+                    calendar_and_fiscal_projections(
+                        st.session_state.mileage_rate
+                    )["fiscal"]["total"],
+                ],
             ],
             columns=["Metric", "Value"],
         )
@@ -779,6 +886,13 @@ annual = annual_projection_from_weekly(
     st.session_state.mileage_rate
 )
 
+annual_periods = calendar_and_fiscal_projections(
+    st.session_state.mileage_rate
+)
+calendar_projection = annual_periods["calendar"]
+fiscal_projection = annual_periods["fiscal"]
+fiscal_label = annual_periods["fiscal_label"]
+
 future_rows = build_future_rate_projection(
     st.session_state.mileage_rate,
     annual_rate_increase,
@@ -858,39 +972,76 @@ with st.container(border=True):
         money(weekly_summary["total"]),
     )
 
-    st.markdown("#### Annual projection")
+    st.markdown("#### Annual projections")
 
-    a1, a2, a3, a4 = st.columns(4)
-
-    a1.metric(
-        "Projected annual miles",
-        f"{annual['annual_miles']:,.1f}",
+    st.caption(
+        "Calendar Year = January 1 through December 31. "
+        "Fiscal Year = October 1 through September 30. "
+        "Both use your normal 'Times per week for projection' travel pattern."
     )
 
-    a2.metric(
-        "Annual mileage reimbursement",
-        money(
-            annual["annual_mileage"]
-        ),
+    st.markdown(
+        f"##### Calendar Year {calendar_projection['start'].year} "
+        f"({calendar_projection['start']:%b %d, %Y} – "
+        f"{calendar_projection['end']:%b %d, %Y})"
     )
 
-    a3.metric(
+    c1, c2, c3, c4 = st.columns(4)
+
+    c1.metric(
+        "Calendar-year miles",
+        f"{calendar_projection['miles']:,.1f}",
+    )
+
+    c2.metric(
+        "Mileage reimbursement",
+        money(calendar_projection["mileage"]),
+    )
+
+    c3.metric(
         (
-            "Annual per diem (taxable)"
+            "Per diem (taxable)"
             if taxable_per_diem
-            else "Annual per diem"
+            else "Per diem"
         ),
-        money(
-            annual["annual_per_diem"]
-        ),
+        money(calendar_projection["per_diem"]),
     )
 
-    a4.metric(
-        "Projected annual "
-        "expense reimbursements",
-        money(
-            annual["annual_total"]
+    c4.metric(
+        "Calendar-year total",
+        money(calendar_projection["total"]),
+    )
+
+    st.markdown(
+        f"##### {fiscal_label} "
+        f"({fiscal_projection['start']:%b %d, %Y} – "
+        f"{fiscal_projection['end']:%b %d, %Y})"
+    )
+
+    f1, f2, f3, f4 = st.columns(4)
+
+    f1.metric(
+        "Fiscal-year miles",
+        f"{fiscal_projection['miles']:,.1f}",
+    )
+
+    f2.metric(
+        "Mileage reimbursement",
+        money(fiscal_projection["mileage"]),
+    )
+
+    f3.metric(
+        (
+            "Per diem (taxable)"
+            if taxable_per_diem
+            else "Per diem"
         ),
+        money(fiscal_projection["per_diem"]),
+    )
+
+    f4.metric(
+        "Fiscal-year total",
+        money(fiscal_projection["total"]),
     )
 
     if not exceeds_eligible_days:
